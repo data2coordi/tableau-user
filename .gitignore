@@ -1,0 +1,7 @@
+.env
+day*.csv
+*.log
+__pycache__/
+*.pyc
+venv/
+.venv/
