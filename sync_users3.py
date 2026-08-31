@@ -80,11 +80,17 @@ def main(csv_path):
                 server.users.remove(u_item.id)
                 
         print("\n=== [4/4] グループと所属の同期 (異動 / 兼務 / 脱退) ===")
-        for g_name, expected_members in expected_memberships.items():
+        # 【修正点】Tableau上の全グループ ＋ CSVで指定された全グループをループ対象にする
+        all_target_group_names = set(current_groups_map.keys()).union(set(expected_memberships.keys()))
+
+        for g_name in all_target_group_names:
             if g_name in SAFEGUARD_GROUPS:
                 continue
-                
-            # C. 新規グループの作成
+            
+            # このグループに所属すべきユーザーリスト（CSVに記載がない場合は空集合 set()）
+            expected_members = expected_memberships.get(g_name, set())
+            
+            # C. 新規グループの作成 (CSVにのみ存在するグループ)
             if g_name not in current_groups_map:
                 print(f"[Create Group] 新規グループ作成: {g_name}")
                 new_group = TSC.GroupItem(g_name)
@@ -96,14 +102,14 @@ def main(csv_path):
             server.groups.populate_users(g_item)
             current_members_map = {u.name: u for u in g_item.users}
             
-            # D. グループへの追加配属 (CSVで所属しているが、現在所属していない)
+            # D. グループへの追加配属
             for u_name in expected_members:
                 if u_name not in current_members_map:
                     if u_name in current_users_map: # ユーザーが存在する場合のみ
                         print(f"[Add to Group] 追加: {u_name} ➔ {g_name}")
                         server.groups.add_user(g_item, current_users_map[u_name].id)
             
-            # E. グループからの脱退 (現在所属しているが、CSVには所属表記がない)
+            # E. グループからの脱退 (CSVの該当グループから消えた、またはグループ自体がCSVから消えた場合)
             for u_name, u_item in current_members_map.items():
                 if u_name not in expected_members and u_name not in SAFEGUARD_USERS:
                     print(f"[Remove from Group] 脱退: {u_name} ➔ {g_name} から除外")
@@ -112,7 +118,7 @@ def main(csv_path):
         print("\n=== すべての同期処理が正常に完了しました ===")
 
 if __name__ == '__main__':
-    csv_file = sys.argv[1] if len(sys.argv) > 1 else 'day2.csv'
+    csv_file = sys.argv[1] if len(sys.argv) > 1 else 'day1.csv'
     if not os.path.exists(csv_file):
         print(f"[エラー] ファイル {csv_file} が見つかりません。")
         sys.exit(1)
