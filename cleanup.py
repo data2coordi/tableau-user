@@ -73,8 +73,6 @@ def cleanup_tableau():
 
 
 if __name__ == "__main__":
-    confirm = input("管理者以外のユーザーとカスタムグループを【すべて削除】します。実行しますか？ (y/N): ")
-    if confirm.lower() == 'y':
-        cleanup_tableau()
-    else:
-        print("処理をキャンセルしました。")
+    #confirm = input("管理者以外のユーザーとカスタムグループを【すべて削除】します。実行しますか？ (y/N): ")
+    #if confirm.lower() == 'y':
+    cleanup_tableau()
