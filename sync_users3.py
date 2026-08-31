@@ -90,8 +90,6 @@ def main(csv_path):
             if group_name in SAFEGUARD_GROUPS:
                 continue
 
-            # このグループにあるべきメンバーリスト（CSVに記載がない場合は空集合）
-            expected_members = csv_group_members.get(group_name, set())
 
             # C. 新規グループの作成 (CSVにのみ存在するグループ)
             if group_name not in server_groups_map:
@@ -100,19 +98,22 @@ def main(csv_path):
                 created_group = server.groups.create(new_group)
                 server_groups_map[group_name] = created_group
 
-            # グループの現在の所属メンバーを取得
+            # 対象グループの現在の所属メンバーをサーバーから取得
             group_item = server_groups_map[group_name]
             server.groups.populate_users(group_item)
             server_members_map = {u.name: u for u in group_item.users}
 
-            # D. グループへの追加配属
+            # D. グループへの追加配属(対象グループにCSVで所属しているがサーバー側では所属していない)
+            # このグループにあるべきメンバーリスト（CSVに記載がない場合は空集合）
+            expected_members = csv_group_members.get(group_name, set())
+            
             for username in expected_members:
                 if username not in server_members_map:
                     if username in server_users_map:  # ユーザーがTableau上に存在する場合のみ
                         print(f"[Add to Group] 追加: {username} ➔ {group_name}")
                         server.groups.add_user(group_item, server_users_map[username].id)
 
-            # E. グループからの脱退 (CSVの該当グループから消えた、またはグループ自体がCSVから消えた場合)
+            # E. グループからの脱退 (CSVの該当グループから消えた)
             for username, user_item in server_members_map.items():
                 if username not in expected_members and username not in SAFEGUARD_USERS:
                     print(f"[Remove from Group] 脱退: {username} ➔ {group_name} から除外")
