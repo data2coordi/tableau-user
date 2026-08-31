@@ -1,0 +1,6 @@
+username,site_role,group
+user6@example.com,Explorer,Sales3
+user7@example.com,Creator,Sales3
+user8@example.com,Explorer,Marketing3
+user9@example.com,Viewer,Engineering3
+user10@example.com,Viewer,Sales3 
